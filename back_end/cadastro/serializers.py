@@ -2,7 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from django.contrib.auth import password_validation
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
-from django.contrib.auth.models import Group
+from .models import Institution, Category, Donation, DonatedBy
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -37,3 +37,31 @@ class UserSerializer(ModelSerializer):
             user.set_password(validated_data['password'])
             user.save()
         return user
+
+class CategorySerializer(ModelSerializer):
+    class Meta:
+        model = Category
+        fields = (
+            'id', 'name'
+        )
+
+class InstitutionSerializer(ModelSerializer):
+    class Meta:
+        model = Institution
+        fields = (
+            'id', 'user', 'long', 'lat', 'category', 'description'
+        )
+
+class DonationSerializer(ModelSerializer):
+    class Meta:
+        model = Donation
+        fields = (
+            'category', 'type', 'institution'
+        )
+
+class DonatedBySerializer(ModelSerializer):
+    class Meta:
+        model = DonatedBy
+        fields = (
+            'donation', 'user', 'date'
+        )
