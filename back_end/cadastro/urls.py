@@ -4,11 +4,11 @@ from rest_framework.routers import DefaultRouter
 from .views import UserViewSet, InstitutionViewSet, CategoryViewSet, DonationViewSet, DonatedByViewSet
 
 router = DefaultRouter()
-router.register(r'usuario', UserViewSet)
-router.register(r'instituicao', InstitutionViewSet)
-router.register(r'categoria', CategoryViewSet)
-router.register(r'doacao', DonationViewSet)
-router.register(r'doadopor', DonatedByViewSet)
+router.register(r'usuario', UserViewSet, basename='usuario')
+router.register(r'instituicao', InstitutionViewSet, basename='instituicao')
+router.register(r'categoria', CategoryViewSet, basename='categoria')
+router.register(r'doacao', DonationViewSet, basename='doacao')
+router.register(r'doadopor', DonatedByViewSet, basename='doadopor')
 
 urlpatterns = [
     re_path('^', include(router.urls)),
