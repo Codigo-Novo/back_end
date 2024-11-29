@@ -1,6 +1,6 @@
-from django.shortcuts import render
-from django.http import HttpRequest
-from django.contrib.auth import get_user_model
+import json
+from django.http import HttpRequest, JsonResponse
+from django.contrib.auth import get_user_model, authenticate, login
 from django.contrib.auth.models import Group
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
@@ -56,3 +56,22 @@ def setUserInstitution(request, pk):
         grupo = Group.objects.get(name='Institution')
         user.groups.add(grupo)
         user.save()
+
+def login_view(request: HttpRequest):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
+            user = authenticate(request, username=username, password=password)
+
+            if user is not None:
+                login(request, user)
+                message = 'OK'
+                return JsonResponse({'message': message})
+            
+            message = 'Fail.'
+            return JsonResponse({'message': message})
+        
+        except json.JSONDecodeError:
+            return JsonResponse({'message': 'Invalid JSON'}, status=400)
