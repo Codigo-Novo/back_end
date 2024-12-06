@@ -1,6 +1,6 @@
 import json
 from django.http import HttpRequest, JsonResponse
-from django.contrib.auth import get_user_model, authenticate, login
+from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.models import Group
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
@@ -43,35 +43,91 @@ class DonatedByViewSet(GenericViewSet, CreateModelMixin,
       serializer_class = DonatedBySerializer
       queryset = DonatedBy.objects.all()
 
-def setUserDonator(request, pk):
+def setUserDonator(request: HttpRequest):
     if request.method == 'POST':
-        user = User.objects.get(pk=pk)
-        grupo = Group.objects.get(name='Donator')
-        user.groups.add(grupo)
-        user.save()
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+            user = User.objects.get(username=username)
+            grupo = Group.objects.get_or_create(name='Donator')
+            user.groups.add(grupo)
+            user.save()
+        except json.JSONDecodeError:
+            return JsonResponse({'message': 'Invalid JSON'}, status=400)
 
-def setUserInstitution(request, pk):
+def setUserInstitution(request: HttpRequest):
     if request.method == 'POST':
-        user = User.objects.get(pk=pk)
-        grupo = Group.objects.get(name='Institution')
-        user.groups.add(grupo)
-        user.save()
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+            user = User.objects.get(username=username)
+            grupo = Group.objects.get_or_create(name='Institution')
+            user.groups.add(grupo)
+            user.save()
+        except json.JSONDecodeError:
+            return JsonResponse({'message': 'Invalid JSON'}, status=400)
 
-def login_view(request: HttpRequest):
+def loginView(request: HttpRequest):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
             username = data.get('username')
             password = data.get('password')
             user = authenticate(request, username=username, password=password)
-
             if user is not None:
                 login(request, user)
-                message = 'OK'
+                message = 'Usuário autenticado com sucesso.'
                 return JsonResponse({'message': message})
-            
-            message = 'Fail.'
-            return JsonResponse({'message': message})
+            message = 'Credenciais inválidas.'
+            return JsonResponse({'message': message}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'message': 'Invalid JSON'}, status=400)
         
+def logoutView(request: HttpRequest):
+    if request.method == 'POST':
+        logout(request)
+        message = 'Usuário desconectado!'
+        return JsonResponse({'message': message})
+    
+def createInstitution(request: HttpRequest):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+            user = User.objects.get(username=username)
+            try:
+                user.groups.get(name='Institution')
+                institution = Institution(user=user)
+                institution.description = data.get('description')
+                try:
+                    institution.lat = data.get('lat')
+                    institution.long = data.get('long')
+                except:
+                    message = 'Localização inválida.'
+                    return JsonResponse({'message': message}, status=400)
+                institution.save()
+                message = 'Instituição criada com sucesso.'
+                return JsonResponse({'message': message})
+            except:
+                message = 'Usuário não é uma instituição.'
+                return JsonResponse({'message': message}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'message': 'Invalid JSON'}, status=400)
+        
+def deleteUser(request: HttpRequest):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            username = data.get('username')
+            password = data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                user.is_active = False
+                user.save()
+                message = 'Usuário desativado.'
+                return JsonResponse({'message': message})
+            else:
+                message = 'Senha inválida.'
+                return JsonResponse({'message': message}, status=400)
         except json.JSONDecodeError:
             return JsonResponse({'message': 'Invalid JSON'}, status=400)

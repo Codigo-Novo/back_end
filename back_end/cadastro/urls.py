@@ -1,7 +1,7 @@
 from django.conf.urls import include
 from django.urls import re_path, path
 from rest_framework.routers import DefaultRouter
-from .views import UserViewSet, InstitutionViewSet, CategoryViewSet, DonationViewSet, DonatedByViewSet, login_view
+from .views import *
 
 router = DefaultRouter()
 router.register(r'usuario', UserViewSet, basename='usuario')
@@ -12,5 +12,10 @@ router.register(r'doadopor', DonatedByViewSet, basename='doadopor')
 
 urlpatterns = [
     re_path('^', include(router.urls)),
-    path('login_view/', login_view),
+    path('loginView/', loginView),
+    path('logoutView/', logoutView),
+    path('setUserDonator/', setUserDonator),
+    path('setUserInsitution/', setUserInstitution),
+    path('createInstitution/', createInstitution),
+    path('deleteUser/', deleteUser)
 ]
