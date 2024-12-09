@@ -49,7 +49,7 @@ class InstitutionSerializer(ModelSerializer):
     class Meta:
         model = Institution
         fields = (
-            'id', 'user', 'long', 'lat', 'category', 'description'
+            'id', 'user', 'long', 'lat', 'category', 'description', 'cpforcnpj'
         )
 
 class DonationSerializer(ModelSerializer):

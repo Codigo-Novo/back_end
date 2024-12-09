@@ -1,7 +1,10 @@
 import json
 from django.http import HttpRequest, JsonResponse
 from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 )
@@ -49,9 +52,10 @@ def setUserDonator(request: HttpRequest):
             data = json.loads(request.body)
             username = data.get('username')
             user = User.objects.get(username=username)
-            grupo = Group.objects.get_or_create(name='Donator')
+            grupo, criado = Group.objects.get_or_create(name='Donator')
             user.groups.add(grupo)
             user.save()
+            return JsonResponse({'message': 'Usuário definido como doador.'})
         except json.JSONDecodeError:
             return JsonResponse({'message': 'Invalid JSON'}, status=400)
 
@@ -61,9 +65,10 @@ def setUserInstitution(request: HttpRequest):
             data = json.loads(request.body)
             username = data.get('username')
             user = User.objects.get(username=username)
-            grupo = Group.objects.get_or_create(name='Institution')
+            grupo, criado = Group.objects.get_or_create(name='Institution')
             user.groups.add(grupo)
             user.save()
+            return JsonResponse({'message': 'Usuário definido como instituição.'})
         except json.JSONDecodeError:
             return JsonResponse({'message': 'Invalid JSON'}, status=400)
 
@@ -131,3 +136,8 @@ def deleteUser(request: HttpRequest):
                 return JsonResponse({'message': message}, status=400)
         except json.JSONDecodeError:
             return JsonResponse({'message': 'Invalid JSON'}, status=400)
+
+@api_view(['GET'])        
+@login_required
+def checkAuth(request: HttpRequest):
+    return Response({'authenticated': True, 'username': request.user.username})

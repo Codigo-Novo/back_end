@@ -12,6 +12,7 @@ class Category(models.Model):
 class Institution(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     description = models.TextField()
+    cpforcnpj = models.TextField()
     long = models.DecimalField(max_digits=22,decimal_places=16)
     lat = models.DecimalField(max_digits=22,decimal_places=16)
     category = models.ManyToManyField(Category)

@@ -15,7 +15,8 @@ urlpatterns = [
     path('loginView/', loginView),
     path('logoutView/', logoutView),
     path('setUserDonator/', setUserDonator),
-    path('setUserInsitution/', setUserInstitution),
+    path('setUserInstitution/', setUserInstitution),
     path('createInstitution/', createInstitution),
-    path('deleteUser/', deleteUser)
+    path('deleteUser/', deleteUser),
+    path('checkAuth/', checkAuth),
 ]
