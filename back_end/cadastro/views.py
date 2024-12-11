@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
 )
+from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import GenericViewSet
 from .models import Institution, Category, Donation, DonatedBy
 from .serializers import UserSerializer, InstitutionSerializer, CategorySerializer, DonationSerializer, DonatedBySerializer
@@ -21,6 +22,7 @@ class UserViewSet(GenericViewSet, CreateModelMixin,
                   ListModelMixin):
       serializer_class = UserSerializer
       queryset = User.objects.all()
+      permission_classes = [AllowAny]
 
 class CategoryViewSet(GenericViewSet, CreateModelMixin,
                   RetrieveModelMixin, UpdateModelMixin, 
@@ -98,21 +100,22 @@ def createInstitution(request: HttpRequest):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            username = data.get('username')
-            user = User.objects.get(username=username)
+            user = request.user
             try:
                 user.groups.get(name='Institution')
-                institution = Institution(user=user)
-                institution.description = data.get('description')
                 try:
+                    institution = Institution.objects.get(user=user.pk)
+                    message = 'Instituição já foi criada.'
+                    return JsonResponse({'message': message}, status=400)
+                except:
+                    institution = Institution(user=user)
+                    institution.description = data.get('description')
+                    institution.cpforcnpj = data.get('cpforcnpj')
                     institution.lat = data.get('lat')
                     institution.long = data.get('long')
-                except:
-                    message = 'Localização inválida.'
-                    return JsonResponse({'message': message}, status=400)
-                institution.save()
-                message = 'Instituição criada com sucesso.'
-                return JsonResponse({'message': message})
+                    institution.save()
+                    message = 'Instituição criada com sucesso.'
+                    return JsonResponse({'message': message})
             except:
                 message = 'Usuário não é uma instituição.'
                 return JsonResponse({'message': message}, status=400)
@@ -141,3 +144,11 @@ def deleteUser(request: HttpRequest):
 @login_required
 def checkAuth(request: HttpRequest):
     return Response({'authenticated': True, 'username': request.user.username})
+
+@api_view(['GET'])        
+@login_required
+def checkInstitution(request: HttpRequest):
+    if request.user.groups.filter(name='Institution').exists():
+        return Response({'institution': True, 'username': request.user.username})
+    else:
+        return Response({'institution': False}, status=400)

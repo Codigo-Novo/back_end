@@ -19,4 +19,5 @@ urlpatterns = [
     path('createInstitution/', createInstitution),
     path('deleteUser/', deleteUser),
     path('checkAuth/', checkAuth),
+    path('checkInstitution/', checkInstitution),
 ]
