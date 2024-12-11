@@ -6,9 +6,7 @@ from .views import *
 router = DefaultRouter()
 router.register(r'usuario', UserViewSet, basename='usuario')
 router.register(r'instituicao', InstitutionViewSet, basename='instituicao')
-router.register(r'categoria', CategoryViewSet, basename='categoria')
-router.register(r'doacao', DonationViewSet, basename='doacao')
-router.register(r'doadopor', DonatedByViewSet, basename='doadopor')
+router.register(r'categoria', KeyWordViewSet, basename='categoria')
 
 urlpatterns = [
     re_path('^', include(router.urls)),

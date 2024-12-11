@@ -10,8 +10,8 @@ from rest_framework.mixins import (
 )
 from rest_framework.permissions import AllowAny
 from rest_framework.viewsets import GenericViewSet
-from .models import Institution, Category, Donation, DonatedBy
-from .serializers import UserSerializer, InstitutionSerializer, CategorySerializer, DonationSerializer, DonatedBySerializer
+from .models import Institution, KeyWord
+from .serializers import UserSerializer, InstitutionSerializer, KeyWordSerializer
 
 User = get_user_model()
 
@@ -24,29 +24,17 @@ class UserViewSet(GenericViewSet, CreateModelMixin,
       queryset = User.objects.all()
       permission_classes = [AllowAny]
 
-class CategoryViewSet(GenericViewSet, CreateModelMixin,
+class KeyWordViewSet(GenericViewSet, CreateModelMixin,
                   RetrieveModelMixin, UpdateModelMixin, 
                   ListModelMixin):
-      serializer_class = CategorySerializer
-      queryset = Category.objects.all()
+      serializer_class = KeyWordSerializer
+      queryset = KeyWord.objects.all()
 
 class InstitutionViewSet(GenericViewSet, CreateModelMixin,
                   RetrieveModelMixin, UpdateModelMixin, 
                   ListModelMixin):
       serializer_class = InstitutionSerializer
       queryset = Institution.objects.all()
-
-class DonationViewSet(GenericViewSet, CreateModelMixin,
-                  RetrieveModelMixin, UpdateModelMixin, 
-                  ListModelMixin):
-      serializer_class = DonationSerializer
-      queryset = Donation.objects.all()
-
-class DonatedByViewSet(GenericViewSet, CreateModelMixin,
-                  RetrieveModelMixin, UpdateModelMixin, 
-                  ListModelMixin):
-      serializer_class = DonatedBySerializer
-      queryset = DonatedBy.objects.all()
 
 def setUserDonator(request: HttpRequest):
     if request.method == 'POST':
