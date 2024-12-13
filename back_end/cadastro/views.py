@@ -1,4 +1,5 @@
 import json
+from collections import Counter
 from django.http import HttpRequest, JsonResponse
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.decorators import login_required
@@ -139,15 +140,68 @@ def checkAuth(request: HttpRequest):
 @login_required
 def checkInstitution(request: HttpRequest):
     if request.user.groups.filter(name='Institution').exists():
-        return Response({'institution': True, 'username': request.user.username})
+        return Response({'institution': True, 'username': request.user.username, 'id': request.user.id})
     else:
         return Response({'institution': False}, status=400)
 
 @api_view(['GET'])          
-def getTrendKeyWords(request: HttpRequest):
+def getTrendKeyWords(request: HttpRequest, n):
     try:
-        data = json.loads(request.body)
-        n = data.get('n')
-        
-    except:
+        n = int(n)
+    except ValueError:
+        return Response({"error": "Invalid value for 'n'. It must be an integer."}, status=400)
+    hash = Counter()
+    institutions = Institution.objects.all()
+    for institution in institutions:
+        for keyword in institution.keywords.all():
+            hash[keyword.name] += 1  
+    sorted_keywords = hash.most_common(n)
+    return Response({"keywords": sorted_keywords})
+
+@api_view(['POST'])
+def addKeyWordInstitution(request: HttpRequest):
+    try:
+        data = request.data
+    except json.JSONDecodeError:
         return JsonResponse({'message': 'Invalid JSON'}, status=400)
+    institutionUsername = data.get('institutionUsername')
+    keywordId = data.get('keywordId')
+    try:
+        user = User.objects.get(username=institutionUsername)
+    except:
+        return JsonResponse({'message': 'Usuário inválido.'}, status=400)
+    try:
+        institution = Institution.objects.get(pk=user.pk)
+    except:
+        return JsonResponse({'message': 'Instituição inválida'}, status=400)
+    try:
+        keyword = KeyWord.objects.get(pk=keywordId)
+    except:
+        return JsonResponse({'message': 'KeyWord não existe.'}, status=400)
+    institution.keywords.add(keyword)
+    institution.save()
+    return JsonResponse({'message': 'Success'})
+
+@api_view(['POST'])
+def removeKeyWordInstitution(request: HttpRequest):
+    try:
+        data = request.data
+    except json.JSONDecodeError:
+        return JsonResponse({'message': 'Invalid JSON'}, status=400)
+    institutionUsername = data.get('institutionUsername')
+    keywordId = data.get('keywordId')
+    try:
+        user = User.objects.get(username=institutionUsername)
+    except:
+        return JsonResponse({'message': 'Usuário inválido.'}, status=400)
+    try:
+        institution = Institution.objects.get(pk=user.pk)
+    except:
+        return JsonResponse({'message': 'Instituição inválida'}, status=400)
+    try:
+        keyword = KeyWord.objects.get(pk=keywordId)
+    except:
+        return JsonResponse({'message': 'KeyWord não existe.'}, status=400)
+    institution.keywords.remove(keyword)
+    institution.save()
+    return JsonResponse({'message': 'Success'})

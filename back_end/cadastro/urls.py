@@ -6,7 +6,7 @@ from .views import *
 router = DefaultRouter()
 router.register(r'usuario', UserViewSet, basename='usuario')
 router.register(r'instituicao', InstitutionViewSet, basename='instituicao')
-router.register(r'categoria', KeyWordViewSet, basename='categoria')
+router.register(r'palavraschave', KeyWordViewSet, basename='palavraschave')
 
 urlpatterns = [
     re_path('^', include(router.urls)),
@@ -18,4 +18,7 @@ urlpatterns = [
     path('deleteUser/', deleteUser),
     path('checkAuth/', checkAuth),
     path('checkInstitution/', checkInstitution),
+    path('getTrendKeyWords/<int:n>/', getTrendKeyWords),
+    path('addKeyWordInstitution/', addKeyWordInstitution),
+    path('removeKeyWordInstitution/', removeKeyWordInstitution),
 ]
