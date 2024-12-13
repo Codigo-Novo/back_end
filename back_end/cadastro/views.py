@@ -29,12 +29,14 @@ class KeyWordViewSet(GenericViewSet, CreateModelMixin,
                   ListModelMixin):
       serializer_class = KeyWordSerializer
       queryset = KeyWord.objects.all()
+      permission_classes = [AllowAny]
 
 class InstitutionViewSet(GenericViewSet, CreateModelMixin,
                   RetrieveModelMixin, UpdateModelMixin, 
                   ListModelMixin):
       serializer_class = InstitutionSerializer
       queryset = Institution.objects.all()
+      permission_classes = [AllowAny]
 
 def setUserDonator(request: HttpRequest):
     if request.method == 'POST':
@@ -140,3 +142,12 @@ def checkInstitution(request: HttpRequest):
         return Response({'institution': True, 'username': request.user.username})
     else:
         return Response({'institution': False}, status=400)
+
+@api_view(['GET'])          
+def getTrendKeyWords(request: HttpRequest):
+    try:
+        data = json.loads(request.body)
+        n = data.get('n')
+        
+    except:
+        return JsonResponse({'message': 'Invalid JSON'}, status=400)

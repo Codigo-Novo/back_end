@@ -46,6 +46,8 @@ class KeyWordSerializer(ModelSerializer):
         )
 
 class InstitutionSerializer(ModelSerializer):
+    user = serializers.CharField(source='user.first_name', read_only=True)
+
     class Meta:
         model = Institution
         fields = (
