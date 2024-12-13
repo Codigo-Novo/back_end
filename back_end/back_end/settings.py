@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
-    'rest_framework.authtoken',
     "django_extensions",
     'cadastro',
     'corsheaders',
@@ -48,6 +47,10 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
     ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+
 }
 
 MIDDLEWARE = [
@@ -70,10 +73,6 @@ CSRF_COOKIE_SECURE = True
 SESSION_COOKIE_SECURE = True
 
 CSRF_USE_SESSIONS = True
-
-CORS_ORIGIN_WHITELIST = [
-    'https://localhost:4200',
-]
 
 CORS_ALLOWED_ORIGINS = [
     "https://localhost:4200",

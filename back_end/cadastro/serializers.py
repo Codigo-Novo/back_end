@@ -2,7 +2,7 @@ from rest_framework.serializers import ModelSerializer
 from django.contrib.auth import password_validation
 from rest_framework import serializers
 from django.core.exceptions import ValidationError
-from .models import Institution, Category, Donation, DonatedBy
+from .models import Institution, KeyWord
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -11,7 +11,7 @@ class UserSerializer(ModelSerializer):
     class Meta:
         model = User
         fields = (
-            'id', 'username', 'password', 'email'
+            'id', 'username', 'first_name', 'password', 'email'
         )
         extra_kwargs = {
             'password': {'write_only': True},
@@ -38,30 +38,18 @@ class UserSerializer(ModelSerializer):
             user.save()
         return user
 
-class CategorySerializer(ModelSerializer):
+class KeyWordSerializer(ModelSerializer):
     class Meta:
-        model = Category
+        model = KeyWord
         fields = (
             'id', 'name'
         )
 
 class InstitutionSerializer(ModelSerializer):
+    user = serializers.CharField(source='user.first_name', read_only=True)
+
     class Meta:
         model = Institution
         fields = (
-            'id', 'user', 'long', 'lat', 'category', 'description'
-        )
-
-class DonationSerializer(ModelSerializer):
-    class Meta:
-        model = Donation
-        fields = (
-            'category', 'type', 'institution'
-        )
-
-class DonatedBySerializer(ModelSerializer):
-    class Meta:
-        model = DonatedBy
-        fields = (
-            'donation', 'user', 'date'
+            'id', 'user', 'long', 'lat', 'keywords', 'description', 'cpforcnpj'
         )
