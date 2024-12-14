@@ -140,7 +140,7 @@ def checkAuth(request: HttpRequest):
 @login_required
 def checkInstitution(request: HttpRequest):
     if request.user.groups.filter(name='Institution').exists():
-        return Response({'institution': True, 'username': request.user.username, 'id': request.user.id})
+        return Response({'institution': True, 'username': request.user.username, 'id': Institution.objects.get(user=request.user.id).pk})
     else:
         return Response({'institution': False}, status=400)
 
@@ -171,7 +171,7 @@ def addKeyWordInstitution(request: HttpRequest):
     except:
         return JsonResponse({'message': 'Usuário inválido.'}, status=400)
     try:
-        institution = Institution.objects.get(pk=user.pk)
+        institution = Institution.objects.get(user=user.pk)
     except:
         return JsonResponse({'message': 'Instituição inválida'}, status=400)
     try:
@@ -195,7 +195,7 @@ def removeKeyWordInstitution(request: HttpRequest):
     except:
         return JsonResponse({'message': 'Usuário inválido.'}, status=400)
     try:
-        institution = Institution.objects.get(pk=user.pk)
+        institution = Institution.objects.get(user=user.pk)
     except:
         return JsonResponse({'message': 'Instituição inválida'}, status=400)
     try:
