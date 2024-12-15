@@ -154,9 +154,13 @@ def getTrendKeyWords(request: HttpRequest, n):
     institutions = Institution.objects.all()
     for institution in institutions:
         for keyword in institution.keywords.all():
-            hash[keyword.name] += 1  
+            hash[keyword] += 1  
     sorted_keywords = hash.most_common(n)
-    return Response({"keywords": sorted_keywords})
+    serialized_keywords = [
+        {"keyword": KeyWordSerializer(keyword).data, "count": count}
+        for keyword, count in sorted_keywords
+    ]
+    return Response({"keywords": serialized_keywords})
 
 @api_view(['POST'])
 def addKeyWordInstitution(request: HttpRequest):
