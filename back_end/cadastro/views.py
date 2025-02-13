@@ -4,7 +4,7 @@ from django.http import HttpRequest, JsonResponse
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
@@ -144,7 +144,8 @@ def checkInstitution(request: HttpRequest):
     else:
         return Response({'institution': False}, status=400)
 
-@api_view(['GET'])          
+@api_view(['GET'])
+@permission_classes([AllowAny])          
 def getTrendKeyWords(request: HttpRequest, n):
     try:
         n = int(n)
