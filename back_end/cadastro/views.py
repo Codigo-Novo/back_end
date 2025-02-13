@@ -4,7 +4,7 @@ from django.http import HttpRequest, JsonResponse
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
@@ -140,11 +140,12 @@ def checkAuth(request: HttpRequest):
 @login_required
 def checkInstitution(request: HttpRequest):
     if request.user.groups.filter(name='Institution').exists():
-        return Response({'institution': True, 'username': request.user.username, 'id': request.user.id})
+        return Response({'institution': True, 'username': request.user.username, 'id': Institution.objects.get(user=request.user.id).pk})
     else:
         return Response({'institution': False}, status=400)
 
-@api_view(['GET'])          
+@api_view(['GET'])
+@permission_classes([AllowAny])          
 def getTrendKeyWords(request: HttpRequest, n):
     try:
         n = int(n)
@@ -154,9 +155,13 @@ def getTrendKeyWords(request: HttpRequest, n):
     institutions = Institution.objects.all()
     for institution in institutions:
         for keyword in institution.keywords.all():
-            hash[keyword.name] += 1  
+            hash[keyword] += 1  
     sorted_keywords = hash.most_common(n)
-    return Response({"keywords": sorted_keywords})
+    serialized_keywords = [
+        {"keyword": KeyWordSerializer(keyword).data, "count": count}
+        for keyword, count in sorted_keywords
+    ]
+    return Response({"keywords": serialized_keywords})
 
 @api_view(['POST'])
 def addKeyWordInstitution(request: HttpRequest):
@@ -171,7 +176,7 @@ def addKeyWordInstitution(request: HttpRequest):
     except:
         return JsonResponse({'message': 'Usuário inválido.'}, status=400)
     try:
-        institution = Institution.objects.get(pk=user.pk)
+        institution = Institution.objects.get(user=user.pk)
     except:
         return JsonResponse({'message': 'Instituição inválida'}, status=400)
     try:
@@ -195,7 +200,7 @@ def removeKeyWordInstitution(request: HttpRequest):
     except:
         return JsonResponse({'message': 'Usuário inválido.'}, status=400)
     try:
-        institution = Institution.objects.get(pk=user.pk)
+        institution = Institution.objects.get(user=user.pk)
     except:
         return JsonResponse({'message': 'Instituição inválida'}, status=400)
     try:

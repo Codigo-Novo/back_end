@@ -20,6 +20,7 @@ from .views import csrf_token_view
 
 urlpatterns = [
     path('cadastro/', include('cadastro.urls')),
+    path('donation/', include('donation.urls')),
     path('admin/', admin.site.urls),
     path('csrf/', csrf_token_view),
 ]
