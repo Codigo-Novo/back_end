@@ -134,7 +134,7 @@ def deleteUser(request: HttpRequest):
 @api_view(['GET'])        
 @login_required
 def checkAuth(request: HttpRequest):
-    return Response({'authenticated': True, 'username': request.user.username})
+    return Response({'authenticated': True, 'username': request.user.username, 'id': request.user.id})
 
 @api_view(['GET'])        
 @login_required

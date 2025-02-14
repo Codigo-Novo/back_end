@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.http import HttpRequest, JsonResponse
 import json
 from .models import DonationToken
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from cadastro.models import Institution
 
 @api_view(['POST'])
@@ -34,8 +34,12 @@ def generateDonation(request: HttpRequest):
     donatoruser = data.get('donator')
     try:
         donator = User.objects.get(username=donatoruser)
+        try:
+            grupo = donator.groups.get(name='Donator')
+        except:
+            return JsonResponse({'message': 'Usuário informado não é um doador.'}, status=400)
     except:
-        return JsonResponse({'message': 'Usuário não encontrado ou inexistente.'}, status=400)
+        return JsonResponse({'message': 'Usuário informado não encontrado ou inexistente.'}, status=400)
     token = DonationToken.objects.create(created_by=user, description=description)
     token.redeem(donator)
     return JsonResponse({"Token": token.token})
