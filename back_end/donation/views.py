@@ -50,19 +50,19 @@ def redeemDonationToken(request: HttpRequest):
     try:
         data = request.data
     except json.JSONDecodeError:
-        return JsonResponse({'message': 'Invalid JSON'}, status=400)
+        return JsonResponse({'error': 'Erro interno.'}, status=400)
     
     token_value = data.get('token')
     token = DonationToken.objects.filter(token=token_value, is_redeemed=False).first()
 
     if token and token.redeem(request.user):
         return JsonResponse({
-            "success": "Doação registrada com sucesso",
+            "success": "Doação resgatada com sucesso!",
             "redeemed_at": token.redeemed_at,
             "redeemed_by": token.redeemed_by.username
         })
     
-    return JsonResponse({"error": "Token inválido ou já resgatado"}, status=400)
+    return JsonResponse({"error": "Token inválido ou já resgatado."}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated]) 
