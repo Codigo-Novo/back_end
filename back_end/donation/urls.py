@@ -7,4 +7,6 @@ urlpatterns = [
     path('redeemToken/', redeemDonationToken),
     path('getDonatorDonations/', getDonatorDonations),
     path('getInstitutionDonations/', getInstitutionDonations),
+    path('editDonation/', editDonation),
+    path('deleteDonation/', deleteDonation),
 ]

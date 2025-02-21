@@ -82,7 +82,7 @@ def getDonatorDonations(request: HttpRequest):
 def getInstitutionDonations(request: HttpRequest):
     user = request.user
     donations = DonationToken.objects.filter(created_by=user).select_related("redeemed_by").values(
-        "token", "description", "is_redeemed", "created_at", "redeemed_at", "redeemed_by__first_name"
+        "id","token", "description", "is_redeemed", "created_at", "redeemed_at", "redeemed_by__first_name"
     )
     total_donations = donations.count()
     redeemed_count = donations.filter(is_redeemed=True).count()
@@ -91,3 +91,32 @@ def getInstitutionDonations(request: HttpRequest):
                          "total_donations": total_donations,
                          "redeemed_donations": redeemed_count, 
                          "donations": list(donations)})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated]) 
+def editDonation(request: HttpRequest):
+    try:
+        data = request.data
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    id = data.get('id')
+    description = data.get('description')
+    token = DonationToken.objects.get(id=id)
+    token.description = description
+    token.save()
+    return JsonResponse({'success': 'Doação atualizada com sucesso!'})
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated]) 
+def deleteDonation(request: HttpRequest):
+    try:
+        data = request.data
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON'}, status=400)
+    
+    id = data.get('id')
+    token = DonationToken.objects.get(id=id)
+    token.delete()
+
+    return JsonResponse({'success': 'Doação apagada com sucesso!'})

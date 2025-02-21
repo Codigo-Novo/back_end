@@ -51,5 +51,5 @@ class InstitutionSerializer(ModelSerializer):
     class Meta:
         model = Institution
         fields = (
-            'id', 'user', 'long', 'lat', 'keywords', 'description', 'cpforcnpj'
+            'id', 'user', 'long', 'lat', 'keywords', 'description', 'cpforcnpj', 'is_active'
         )

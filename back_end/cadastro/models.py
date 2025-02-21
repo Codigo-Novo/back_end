@@ -16,3 +16,4 @@ class Institution(models.Model):
     long = models.DecimalField(max_digits=22,decimal_places=16)
     lat = models.DecimalField(max_digits=22,decimal_places=16)
     keywords = models.ManyToManyField(KeyWord)
+    is_active = models.BooleanField(default=True)

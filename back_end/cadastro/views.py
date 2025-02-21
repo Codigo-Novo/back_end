@@ -48,7 +48,7 @@ def getInstitutionByUser(request: HttpRequest):
         return JsonResponse({"id": institution.id, 
                              "long": institution.long, 
                              "lat": institution.lat, 
-                             "keywords": list(institution.keywords.values_list('name', flat=True)),
+                             "keywords": list(institution.keywords.values_list('id', flat=True)),
                              "description": institution.description,
                              "cpforcnpj": institution.cpforcnpj})
     except Institution.DoesNotExist:
@@ -154,6 +154,10 @@ def deleteUser(request: HttpRequest):
             if user is not None:
                 user.is_active = False
                 user.save()
+                if user.groups.get().name == 'Institution':
+                    institution = Institution.objects.get(user=user)
+                    institution.is_active = False
+                    institution.save()
                 message = 'Usuário desativado.'
                 return JsonResponse({'success': message})
             else:
@@ -171,7 +175,7 @@ def checkAuth(request: HttpRequest):
 @login_required
 def checkInstitution(request: HttpRequest):
     if request.user.groups.filter(name='Institution').exists():
-        return Response({'institution': True, 'username': request.user.username, 'id': Institution.objects.get(user=request.user.id).pk})
+        return Response({'institution': True, 'username': request.user.username, 'id': request.user.id})
     else:
         return Response({'institution': False}, status=400)
 
