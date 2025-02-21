@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from django.http import HttpRequest, JsonResponse
 import json
 from .models import DonationToken
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from cadastro.models import Institution
 
 @api_view(['POST'])
@@ -34,8 +34,12 @@ def generateDonation(request: HttpRequest):
     donatoruser = data.get('donator')
     try:
         donator = User.objects.get(username=donatoruser)
+        try:
+            grupo = donator.groups.get(name='Donator')
+        except:
+            return JsonResponse({'message': 'Usuário informado não é um doador.'}, status=400)
     except:
-        return JsonResponse({'message': 'Usuário não encontrado ou inexistente.'}, status=400)
+        return JsonResponse({'message': 'Usuário informado não encontrado ou inexistente.'}, status=400)
     token = DonationToken.objects.create(created_by=user, description=description)
     token.redeem(donator)
     return JsonResponse({"Token": token.token})
@@ -46,19 +50,19 @@ def redeemDonationToken(request: HttpRequest):
     try:
         data = request.data
     except json.JSONDecodeError:
-        return JsonResponse({'message': 'Invalid JSON'}, status=400)
+        return JsonResponse({'error': 'Erro interno.'}, status=400)
     
     token_value = data.get('token')
     token = DonationToken.objects.filter(token=token_value, is_redeemed=False).first()
 
     if token and token.redeem(request.user):
         return JsonResponse({
-            "success": "Doação registrada com sucesso",
+            "success": "Doação resgatada com sucesso!",
             "redeemed_at": token.redeemed_at,
             "redeemed_by": token.redeemed_by.username
         })
     
-    return JsonResponse({"error": "Token inválido ou já resgatado"}, status=400)
+    return JsonResponse({"error": "Token inválido ou já resgatado."}, status=400)
 
 @api_view(['GET'])
 @permission_classes([IsAuthenticated]) 

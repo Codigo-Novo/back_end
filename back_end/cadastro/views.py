@@ -4,6 +4,7 @@ from django.http import HttpRequest, JsonResponse
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import Group
+from django.shortcuts import get_object_or_404
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.mixins import (
@@ -21,23 +22,37 @@ User = get_user_model()
 class UserViewSet(GenericViewSet, CreateModelMixin,
                   RetrieveModelMixin, UpdateModelMixin, 
                   ListModelMixin):
-      serializer_class = UserSerializer
-      queryset = User.objects.all()
-      permission_classes = [AllowAny]
+    serializer_class = UserSerializer
+    queryset = User.objects.all()
+    permission_classes = [AllowAny]
 
 class KeyWordViewSet(GenericViewSet, CreateModelMixin,
                   RetrieveModelMixin, UpdateModelMixin, 
                   ListModelMixin):
-      serializer_class = KeyWordSerializer
-      queryset = KeyWord.objects.all()
-      permission_classes = [AllowAny]
+    serializer_class = KeyWordSerializer
+    queryset = KeyWord.objects.all()
+    permission_classes = [AllowAny]
 
 class InstitutionViewSet(GenericViewSet, CreateModelMixin,
                   RetrieveModelMixin, UpdateModelMixin, 
                   ListModelMixin):
-      serializer_class = InstitutionSerializer
-      queryset = Institution.objects.all()
-      permission_classes = [AllowAny]
+    serializer_class = InstitutionSerializer
+    queryset = Institution.objects.all()
+    permission_classes = [AllowAny]
+
+@api_view(['GET'])        
+@login_required
+def getInstitutionByUser(request: HttpRequest):
+    try:
+        institution = get_object_or_404(Institution, user=request.user)
+        return JsonResponse({"id": institution.id, 
+                             "long": institution.long, 
+                             "lat": institution.lat, 
+                             "keywords": list(institution.keywords.values_list('name', flat=True)),
+                             "description": institution.description,
+                             "cpforcnpj": institution.cpforcnpj})
+    except Institution.DoesNotExist:
+        return JsonResponse({'error': 'Usuário não é uma instituição.'}, status=400)
 
 def setUserDonator(request: HttpRequest):
     if request.method == 'POST':
@@ -112,29 +127,45 @@ def createInstitution(request: HttpRequest):
                 return JsonResponse({'message': message}, status=400)
         except json.JSONDecodeError:
             return JsonResponse({'message': 'Invalid JSON'}, status=400)
-        
+
+def verifyPassword(request: HttpRequest):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            username = request.user.username
+            password = data.get('password')
+            user = authenticate(request, username=username, password=password)
+            if user is not None:
+                message = 'Senha correta.'
+                return JsonResponse({'success': message})
+            else:
+                message = 'Senha atual incorreta, tente novamente.'
+                return JsonResponse({'error': message}, status=400)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Erro interno'}, status=400)
+
 def deleteUser(request: HttpRequest):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            username = data.get('username')
+            username = request.user.username
             password = data.get('password')
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 user.is_active = False
                 user.save()
                 message = 'Usuário desativado.'
-                return JsonResponse({'message': message})
+                return JsonResponse({'success': message})
             else:
-                message = 'Senha inválida.'
-                return JsonResponse({'message': message}, status=400)
+                message = 'Senha incorreta digitada, tente novamente.'
+                return JsonResponse({'error': message}, status=400)
         except json.JSONDecodeError:
-            return JsonResponse({'message': 'Invalid JSON'}, status=400)
+            return JsonResponse({'error': 'Erro interno'}, status=400)
 
 @api_view(['GET'])        
 @login_required
 def checkAuth(request: HttpRequest):
-    return Response({'authenticated': True, 'username': request.user.username})
+    return Response({'authenticated': True, 'username': request.user.username, 'id': request.user.id})
 
 @api_view(['GET'])        
 @login_required
